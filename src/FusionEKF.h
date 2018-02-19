@@ -1,5 +1,6 @@
 #ifndef FusionEKF_H_
 #define FusionEKF_H_
+#define thresh 0.001
 
 #include "measurement_package.h"
 #include "Eigen/Dense"

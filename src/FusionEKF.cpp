@@ -44,20 +44,28 @@ FusionEKF::FusionEKF() {
          1, 1, 1, 1;
 
   // The initial transition matrix F_
-  ekf_.F_ = MatrixXd(4, 4);
-  ekf_.F_ << 1, 0, 1, 0,
+  MatrixXd F_ = MatrixXd(4, 4);
+  F_ << 1, 0, 1, 0,
              0, 1, 0, 1,
              0, 0, 1, 0,
              0, 0, 0, 1;
 
   // State covariance matrix P
-  ekf_.P_ = MatrixXd(4, 4);
-  ekf_.P_ << 1, 0, 0, 0,
+  MatrixXd P_ = MatrixXd(4, 4);
+  P_ << 1, 0, 0, 0,
              0, 1, 0, 0,
              0, 0, 1000, 0,
              0, 0, 0, 1000;
 
+  MatrixXd Q_ = MatrixXd(4, 4);
+  Q_ << 1, 0, 1, 0,
+        0, 1, 0, 1,
+        1, 0, 1, 0,
+        0, 1, 0, 1;
 
+  VectorXd x_ = VectorXd(4);
+  x_ << 1, 1, 1, 1;
+  ekf_.Init(x_, P_, F_, H_laser_, R_laser_, Q_);
 }
 
 /**
@@ -89,11 +97,10 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       */
       float rho     = measurement_pack.raw_measurements_(0);
       float phi     = measurement_pack.raw_measurements_(1);
-      float rho_dot = measurement_pack.raw_measurements_(2);
       ekf_.x_(0) = rho     * cos(phi);
       ekf_.x_(1) = rho     * sin(phi);
-      ekf_.x_(2) = rho_dot * cos(phi);
-      ekf_.x_(3) = rho_dot * sin(phi);
+      ekf_.x_(2) = 0.0;
+      ekf_.x_(3) = 0.0;
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
       /**
@@ -101,6 +108,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       */
       ekf_.x_(0) = measurement_pack.raw_measurements_(0);
       ekf_.x_(1) = measurement_pack.raw_measurements_(1);
+      ekf_.x_(2) = 0.0;
+      ekf_.x_(3) = 0.0;
     }
     previous_timestamp_ = measurement_pack.timestamp_;
     // done initializing, no need to predict or update
